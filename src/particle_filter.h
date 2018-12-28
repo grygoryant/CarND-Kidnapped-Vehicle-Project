@@ -4,15 +4,17 @@
  * 2D particle filter class.
  *  Created on: Dec 12, 2016
  *      Author: Tiffany Huang
+ * 		Modified: Grigorii Antiokh
  */
 
 #ifndef PARTICLE_FILTER_H_
 #define PARTICLE_FILTER_H_
 
+
+#include <map>
 #include "helper_functions.h"
 
 struct Particle {
-
 	int id;
 	double x;
 	double y;
@@ -21,6 +23,12 @@ struct Particle {
 	std::vector<int> associations;
 	std::vector<double> sense_x;
 	std::vector<double> sense_y;
+
+	Particle(): id(0), x(0), y(0), theta(0), weight(0) {}
+
+	Particle(int id, double x, double y,
+		double theta, double weight): 
+		id(id), x(x), y(y), theta(theta), weight(weight) {}
 };
 
 
@@ -28,24 +36,29 @@ struct Particle {
 class ParticleFilter {
 	
 	// Number of particles to draw
-	int num_particles; 
+	size_t m_num_particles; 
 	
 	
 	
 	// Flag, if filter is initialized
-	bool is_initialized;
+	bool m_is_initialized;
 	
 	// Vector of weights of all particles
-	std::vector<double> weights;
+	std::vector<double> m_weights;
+	double m_max_weight;
 	
 public:
 	
 	// Set of current particles
-	std::vector<Particle> particles;
+	std::vector<Particle> m_particles;
 
 	// Constructor
 	// @param num_particles Number of particles
-	ParticleFilter() : num_particles(0), is_initialized(false) {}
+	ParticleFilter() : 
+		m_num_particles(0), 
+		m_is_initialized(false),
+		m_max_weight(std::numeric_limits<double>::min())
+		{}
 
 	// Destructor
 	~ParticleFilter() {}
@@ -78,7 +91,7 @@ public:
 	 * @param predicted Vector of predicted landmark observations
 	 * @param observations Vector of landmark observations
 	 */
-	void dataAssociation(std::vector<LandmarkObs> predicted, std::vector<LandmarkObs>& observations);
+	void dataAssociation(std::map<int, LandmarkObs> predicted, std::vector<LandmarkObs>& observations);
 	
 	/**
 	 * updateWeights Updates the weights for each particle based on the likelihood of the 
@@ -113,7 +126,7 @@ public:
 	* initialized Returns whether particle filter is initialized yet or not.
 	*/
 	const bool initialized() const {
-		return is_initialized;
+		return m_is_initialized;
 	}
 };
 
