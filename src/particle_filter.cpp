@@ -89,13 +89,16 @@ void ParticleFilter::dataAssociation(std::map<int, LandmarkObs> predicted, std::
 		auto min_dist = std::numeric_limits<double>::max();
 
 		int id = -1;
-		for(const auto& [prediction_id, prediction] : predicted)
+		for(const auto& prediction : predicted)
 		{
-			auto distance = dist(observation.x, observation.y, prediction.x, prediction.y);
+			const auto& pred_id = prediction.first;
+			const auto& pred = prediction.second;
+			auto distance = dist(observation.x, observation.y, 
+				pred.x, pred.y);
 			if(distance < min_dist)
 			{
 				min_dist = distance;
-				id = prediction_id;
+				id = pred_id;
 			}
 		}
 		observation.id = id;
@@ -104,7 +107,6 @@ void ParticleFilter::dataAssociation(std::map<int, LandmarkObs> predicted, std::
 
 void ParticleFilter::updateWeights(double sensor_range, double std_landmark[], 
 		const std::vector<LandmarkObs> &observations, const Map &map_landmarks) {
-	auto sensor_range_squared = sensor_range * sensor_range;
 	auto normalizer = 1./(2 * M_PI * std_landmark[0] * std_landmark[1]);
 	auto doubled_std_landmark_x_2 = 2 * std_landmark[0] * std_landmark[0];
 	auto doubled_std_landmark_y_2 = 2 * std_landmark[1] * std_landmark[1];
@@ -117,7 +119,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		std::map<int, LandmarkObs> landmarks_in_range;
 		for(auto& landmark : map_landmarks.landmark_list)
 		{
-			if(dist(particle.x, particle.y, landmark.x_f, landmark.y_f) <= sensor_range_squared)
+			if(dist(particle.x, particle.y, landmark.x_f, landmark.y_f) <= sensor_range)
 			{
 				auto id = landmark.id_i;
 				auto x = landmark.x_f;
